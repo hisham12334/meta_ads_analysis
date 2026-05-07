@@ -1,0 +1,22 @@
+{
+  "name": "meta-ads-readonly-mcp",
+  "version": "0.1.0",
+  "description": "Read-only Meta Ads MCP connector for ecommerce performance analysis.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node src/server.js",
+    "check": "node --check src/server.js && node --check src/metaClient.js && node --check src/metrics.js && node --check src/config.js",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --runInBand"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "transform": {}
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
