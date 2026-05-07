@@ -1,5 +1,11 @@
 import { loadConfig, validateConfig } from "./config.js";
 import { diagnoseRows, fatigueRows, normalizeInsight, summarizeTrend } from "./metrics.js";
+import {
+  detectAnomalies as intelligenceDetectAnomalies,
+  selectTopAds,
+  buildCreativeBrief,
+  computeSpendPacing
+} from "./intelligence.js";
 
 const INSIGHT_FIELDS = [
   "account_id",
@@ -207,6 +213,121 @@ export class MetaAdsClient {
     if (response.error) return response;
     return diagnoseRows(response.rows, input);
   }
+
+  // ---------------------------------------------------------------------------
+  // Creative Intelligence Engine — Layer 1: Anomaly Detection
+  // ---------------------------------------------------------------------------
+
+  async detectAnomalies(input = {}) {
+    const level = input.level ?? "campaign";
+    if (level !== "campaign" && level !== "adset") {
+      return toolError("invalid_input", "detect_anomalies level must be 'campaign' or 'adset'.", false);
+    }
+
+    const dateInput = input.time_range
+      ? { time_range: input.time_range }
+      : { date_preset: input.date_preset ?? "last_14d" };
+
+    const response = await this.getDailyPerformance({
+      ...dateInput,
+      level,
+      entity_id: input.entity_id
+    });
+
+    if (response.error) return response;
+
+    const rows = response.days ?? [];
+    return intelligenceDetectAnomalies(rows, {
+      anomaly_threshold: input.anomaly_threshold ?? 0.2,
+      monthly_budget: input.monthly_budget ?? null,
+      minimum_spend_to_judge: input.minimum_spend_to_judge ?? DEFAULT_MINIMUM_SPEND_TO_JUDGE
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Creative Intelligence Engine — Layer 2: Creative Brief Generator
+  // ---------------------------------------------------------------------------
+
+  async generateCreativeBrief(input = {}) {
+    const { ad_id, adset_id, campaign_id, top_n = 3, brand_context = null } = input;
+
+    if (!ad_id && !adset_id && !campaign_id) {
+      return toolError(
+        "invalid_input",
+        "generate_creative_brief requires at least one of: ad_id, adset_id, campaign_id.",
+        false
+      );
+    }
+
+    const adInput = {
+      date_preset: input.date_preset ?? "last_14d",
+      ...(input.time_range ? { time_range: input.time_range } : {}),
+      ...(adset_id ? { adset_id } : {}),
+      ...(campaign_id && !adset_id ? { campaign_id } : {})
+    };
+
+    const response = await this.getAdInsights(adInput);
+    if (response.error) return response;
+
+    let rows = response.ads ?? [];
+
+    // When a specific ad_id is requested, filter to just that ad
+    if (ad_id) {
+      rows = rows.filter((r) => r.ad_id === ad_id);
+    }
+
+    const topAds = selectTopAds(rows, top_n, DEFAULT_MINIMUM_SPEND_TO_JUDGE);
+
+    if (topAds.length === 0) {
+      return toolError(
+        "invalid_input",
+        `No ads met the minimum spend threshold of ${DEFAULT_MINIMUM_SPEND_TO_JUDGE}. ` +
+        "Try a longer date range or lower minimum_spend_to_judge.",
+        false
+      );
+    }
+
+    return buildCreativeBrief(topAds, brand_context);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Creative Intelligence Engine — Layer 3: Spend Pacing
+  // ---------------------------------------------------------------------------
+
+  async getSpendPacing(input = {}) {
+    const { monthly_budget, gross_margin_pct, target_roas = null } = input;
+
+    if (!monthly_budget || monthly_budget <= 0) {
+      return toolError("invalid_input", "monthly_budget must be a positive number.", false);
+    }
+
+    if (!gross_margin_pct || gross_margin_pct <= 0 || gross_margin_pct > 1) {
+      return toolError("invalid_input", "gross_margin_pct must be a number between 0 (exclusive) and 1 (inclusive).", false);
+    }
+
+    // Default to current calendar month when no time_range provided
+    const now = new Date();
+    const timeRange = input.time_range ?? {
+      since: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`,
+      until: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
+    };
+
+    const response = await this.getDailyPerformance({
+      time_range: timeRange,
+      level: "account"
+    });
+
+    if (response.error) return response;
+
+    const rows = response.days ?? [];
+
+    return computeSpendPacing(rows, {
+      monthly_budget,
+      gross_margin_pct,
+      target_roas
+    });
+  }
+
 
   async getInsights(input = {}) {
     const validation = validateConfig(this.config);

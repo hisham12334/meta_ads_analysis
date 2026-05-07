@@ -2,6 +2,7 @@ import readline from "node:readline";
 import { stdin as input, stdout as output } from "node:process";
 import { MetaAdsClient } from "./metaClient.js";
 
+
 const client = new MetaAdsClient();
 
 const tools = [
@@ -78,6 +79,60 @@ const tools = [
       minimum_spend_to_judge: { type: "number" }
     },
     additionalProperties: false
+  }),
+
+  // ---------------------------------------------------------------------------
+  // Creative Intelligence Engine tools
+  // ---------------------------------------------------------------------------
+
+  tool("detect_anomalies", "Detect metric anomalies in daily performance data with root-cause classification and plain-English explanations.", {
+    type: "object",
+    properties: {
+      date_preset: { type: "string", description: "Meta date preset (e.g. last_14d). Defaults to last_14d." },
+      time_range: {
+        type: "object",
+        properties: { since: { type: "string" }, until: { type: "string" } },
+        required: ["since", "until"],
+        additionalProperties: false
+      },
+      level: { type: "string", enum: ["campaign", "adset"], description: "Level to analyze. Defaults to campaign." },
+      entity_id: { type: "string", description: "Optional campaign or adset ID to scope the analysis." },
+      anomaly_threshold: { type: "number", description: "Fractional deviation threshold (default 0.2 = 20%)." },
+      monthly_budget: { type: "number", description: "Monthly budget in account currency. Enables budget_pacing anomaly detection." },
+      minimum_spend_to_judge: { type: "number", description: "Minimum daily spend to flag a tracking_break anomaly. Defaults to 1500." }
+    },
+    additionalProperties: false
+  }),
+
+  tool("generate_creative_brief", "Generate a data-driven creative brief from top-performing ads. Returns 3 variation directions, Meta specs, and skill references.", {
+    type: "object",
+    properties: {
+      ad_id: { type: "string", description: "Specific ad ID to base the brief on." },
+      adset_id: { type: "string", description: "Adset ID — brief is based on top ads in this adset." },
+      campaign_id: { type: "string", description: "Campaign ID — brief is based on top ads in this campaign." },
+      date_preset: { type: "string", description: "Meta date preset for performance data. Defaults to last_14d." },
+      top_n: { type: "number", description: "Number of top ads to analyze (default 3, max 10)." },
+      brand_context: { type: "string", description: "Optional brand/offer context to incorporate into the brief copy directions." }
+    },
+    additionalProperties: false
+  }),
+
+  tool("get_spend_pacing", "Project month-end spend against a monthly budget and compute cash-flow metrics including breakeven ROAS and projected profit/loss.", {
+    type: "object",
+    properties: {
+      monthly_budget: { type: "number", description: "Monthly budget cap in account currency. Required." },
+      gross_margin_pct: { type: "number", description: "Gross margin as a decimal between 0 and 1 (e.g. 0.4 for 40%). Required." },
+      target_roas: { type: "number", description: "Optional target ROAS for profit projection context." },
+      time_range: {
+        type: "object",
+        properties: { since: { type: "string" }, until: { type: "string" } },
+        required: ["since", "until"],
+        additionalProperties: false,
+        description: "Date range for spend data. Defaults to current calendar month."
+      }
+    },
+    required: ["monthly_budget", "gross_margin_pct"],
+    additionalProperties: false
   })
 ];
 
@@ -90,7 +145,10 @@ const toolHandlers = {
   get_daily_performance: (args) => client.getDailyPerformance(args),
   get_breakdown_insights: (args) => client.getBreakdownInsights(args),
   get_creative_fatigue_report: (args) => client.getCreativeFatigueReport(args),
-  diagnose_performance: (args) => client.diagnosePerformance(args)
+  diagnose_performance: (args) => client.diagnosePerformance(args),
+  detect_anomalies: (args) => client.detectAnomalies(args),
+  generate_creative_brief: (args) => client.generateCreativeBrief(args),
+  get_spend_pacing: (args) => client.getSpendPacing(args)
 };
 
 const rl = readline.createInterface({ input, crlfDelay: Infinity });
