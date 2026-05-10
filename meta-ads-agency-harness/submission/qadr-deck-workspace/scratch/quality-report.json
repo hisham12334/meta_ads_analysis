@@ -1,0 +1,14 @@
+{
+  "workspace": "C:\\Users\\lenovo\\Documents\\Codex\\2026-05-03\\once-we-have-a-shopify-store\\meta-ads-agency-harness\\submission\\qadr-deck-workspace",
+  "pptx": "C:\\Users\\lenovo\\Documents\\Codex\\2026-05-03\\once-we-have-a-shopify-store\\meta-ads-agency-harness\\submission\\qadr-deck-workspace\\output\\output.pptx",
+  "checks": {
+    "output_hygiene": {
+      "output_dir": "C:\\Users\\lenovo\\Documents\\Codex\\2026-05-03\\once-we-have-a-shopify-store\\meta-ads-agency-harness\\submission\\qadr-deck-workspace\\output",
+      "unexpected_files": []
+    }
+  },
+  "failures": [
+    "PPTX package inspection failed: unzip -Z1 C:\\Users\\lenovo\\Documents\\Codex\\2026-05-03\\once-we-have-a-shopify-store\\meta-ads-agency-harness\\submission\\qadr-deck-workspace\\output\\output.pptx failed"
+  ],
+  "warnings": []
+}

@@ -6,6 +6,8 @@ import {
   buildCreativeBrief,
   computeSpendPacing
 } from "./intelligence.js";
+import { searchAdLibrary } from "./adLibraryClient.js";
+import { enrichAd, buildIntelligenceReport } from "./marketIntelligence.js";
 
 const INSIGHT_FIELDS = [
   "account_id",
@@ -326,6 +328,42 @@ export class MetaAdsClient {
       gross_margin_pct,
       target_roas
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Market Intelligence Engine
+  // ---------------------------------------------------------------------------
+
+  async searchAdLibraryAndAnalyse(input = {}) {
+    const response = await searchAdLibrary(input, this.config);
+    if (response.error) return response;
+
+    const rawAds = response.ads ?? [];
+    const referenceDate = new Date();
+    const enrichedAds = rawAds.map(ad => enrichAd(ad, referenceDate));
+
+    return buildIntelligenceReport(
+      enrichedAds,
+      input.query,
+      input.country || "US",
+      null
+    );
+  }
+
+  async analyseMarket(input = {}) {
+    const response = await searchAdLibrary(input, this.config);
+    if (response.error) return response;
+
+    const rawAds = response.ads ?? [];
+    const referenceDate = new Date();
+    const enrichedAds = rawAds.map(ad => enrichAd(ad, referenceDate));
+
+    return buildIntelligenceReport(
+      enrichedAds,
+      input.query,
+      input.country || "US",
+      input.brand_context || null
+    );
   }
 
 

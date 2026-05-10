@@ -133,6 +133,35 @@ const tools = [
     },
     required: ["monthly_budget", "gross_margin_pct"],
     additionalProperties: false
+  }),
+
+  // ---------------------------------------------------------------------------
+  // Market Intelligence Tools
+  // ---------------------------------------------------------------------------
+
+  tool("search_ad_library", "Search Meta Ad Library and analyse competitor ads.", {
+    type: "object",
+    properties: {
+      query: { type: "string", description: "Search keyword or niche." },
+      country: { type: "string", description: "ISO country code, default US." },
+      limit: { type: "number", minimum: 1, maximum: 200, description: "Max records to return, default 50." },
+      ad_type: { type: "string", description: "Ad type filter, default ALL." }
+    },
+    required: ["query"],
+    additionalProperties: false
+  }),
+  
+  tool("analyse_market", "Search Meta Ad Library and generate a full market intelligence report incorporating brand context.", {
+    type: "object",
+    properties: {
+      query: { type: "string", description: "Search keyword or niche." },
+      country: { type: "string", description: "ISO country code, default US." },
+      limit: { type: "number", minimum: 1, maximum: 200, description: "Max records to return, default 50." },
+      ad_type: { type: "string", description: "Ad type filter, default ALL." },
+      brand_context: { type: "string", description: "Optional brand/offer context to incorporate into the report hints." }
+    },
+    required: ["query"],
+    additionalProperties: false
   })
 ];
 
@@ -148,7 +177,9 @@ const toolHandlers = {
   diagnose_performance: (args) => client.diagnosePerformance(args),
   detect_anomalies: (args) => client.detectAnomalies(args),
   generate_creative_brief: (args) => client.generateCreativeBrief(args),
-  get_spend_pacing: (args) => client.getSpendPacing(args)
+  get_spend_pacing: (args) => client.getSpendPacing(args),
+  search_ad_library: (args) => client.searchAdLibraryAndAnalyse(args),
+  analyse_market: (args) => client.analyseMarket(args)
 };
 
 const rl = readline.createInterface({ input, crlfDelay: Infinity });

@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "cross-env": "^10.1.0",
+    "fast-check": "^4.7.0",
     "jest": "^29.7.0"
   },
   "jest": {

@@ -43,6 +43,20 @@ The server communicates over stdio using JSON-RPC/MCP.
 - `get_breakdown_insights`
 - `get_creative_fatigue_report`
 - `diagnose_performance`
+- `search_ad_library`
+- `analyse_market`
+
+## Market Intelligence Features
+
+The latest release introduces the **Market Intelligence Tool**, providing advanced insights into competitor ads via the Meta Ad Library API:
+
+- **Ad Search & Extraction**: Fetches publicly visible competitor ads based on niche/keyword queries.
+- **Signal Enrichment**: Enriches raw ads with performance signals such as:
+  - Computed run duration
+  - Impression range scoring
+  - Hook, offer, and format signal detection
+- **Performance Tier Classification**: Automatically categorizes ads into top, low, or unclassified performance tiers based on a composite score.
+- **Intelligence Reports**: Generates a comprehensive report highlighting pattern frequencies (hooks, offers, formats, CTAs) and workflow context hints, ready to feed directly into the Creative Intelligence Workflow.
 
 ## Example Tool Arguments
 

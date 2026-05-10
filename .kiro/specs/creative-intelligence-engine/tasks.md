@@ -111,7 +111,7 @@ Implement the three-tool Creative Intelligence Engine by building a pure-functio
   - All new `intelligence.test.js` tests must pass
   - Ask the user if any questions arise before proceeding
 
-- [-] 7. Add `detectAnomalies` method to `src/metaClient.js`
+- [x] 7. Add `detectAnomalies` method to `src/metaClient.js`
   - Import `detectAnomalies` from `./intelligence.js`
   - Add `async detectAnomalies(input)` method to `MetaAdsClient`:
     - Validate `level` is `"campaign"` or `"adset"`; return `toolError` otherwise
@@ -120,7 +120,7 @@ Implement the three-tool Creative Intelligence Engine by building a pure-functio
     - Return the result or propagate the error
   - _Requirements: 1.1, 1.2, 1.3, 4.5_
 
-- [-] 8. Add `generateCreativeBrief` method to `src/metaClient.js`
+- [x] 8. Add `generateCreativeBrief` method to `src/metaClient.js`
   - Import `selectTopAds` and `buildCreativeBrief` from `./intelligence.js`
   - Add `async generateCreativeBrief(input)` method to `MetaAdsClient`:
     - Validate that at least one of `ad_id`, `adset_id`, `campaign_id` is provided; return `toolError` otherwise
@@ -131,7 +131,7 @@ Implement the three-tool Creative Intelligence Engine by building a pure-functio
     - Return `{ winning_ads, winning_pattern, brief, meta_specs, skill_context, production_checklist }`
   - _Requirements: 5.1, 5.2, 5.3, 5.5, 7.4, 7.5_
 
-- [ ] 9. Add `getSpendPacing` method to `src/metaClient.js`
+- [x] 9. Add `getSpendPacing` method to `src/metaClient.js`
   - Import `computeSpendPacing` from `./intelligence.js`
   - Add `async getSpendPacing(input)` method to `MetaAdsClient`:
     - Validate `monthly_budget` is a positive number; return `toolError` otherwise
@@ -142,7 +142,7 @@ Implement the three-tool Creative Intelligence Engine by building a pure-functio
     - Return the pacing result or propagate the error
   - _Requirements: 8.1, 9.4, 9.5, 9.6_
 
-- [ ] 10. Register three new tools in `src/server.js`
+- [x] 10. Register three new tools in `src/server.js`
   - Add `detect_anomalies` tool entry using the `tool()` helper with schema:
     - `date_preset` (string, optional), `time_range` (object, optional, same shape as `reportSchema()`), `level` (enum `["campaign","adset"]`, optional), `entity_id` (string, optional), `anomaly_threshold` (number, optional), `monthly_budget` (number, optional), `minimum_spend_to_judge` (number, optional)
     - `additionalProperties: false`
@@ -174,7 +174,7 @@ Implement the three-tool Creative Intelligence Engine by building a pure-functio
   - Explain when to invoke the `ad-creative` skill (during brief execution) and the `100m-offers` skill (when offer_mismatch anomaly is detected)
   - _Requirements: 12.1, 12.2, 12.3, 12.4_
 
-- [ ] 14. Final checkpoint — Ensure all tests pass
+- [x] 14. Final checkpoint — Ensure all tests pass
   - Run `npm test` from `meta-ads-agency-harness/meta-ads-mcp/`
   - Confirm all 27 original tests still pass alongside all new tests
   - Ask the user if any questions arise.
