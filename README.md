@@ -53,4 +53,4 @@ Safety and reliability are foundational to this tool:
 - **Read-Only by Default**: The MCP connector strictly implements read-only endpoints (e.g., `/insights`, `/ads_archive`). It is physically impossible for the AI to alter live campaigns, change budgets, or publish ads.
 - **Human-in-the-Loop Approval**: Any recommended action (pausing a campaign, scaling a budget) is clearly separated from data analysis. The owner must explicitly approve and manually apply write actions.
 - **Data Clamping & Validation**: The API clients clamp limits (e.g., max 200 ads), enforce non-empty queries, and gracefully map Meta Graph errors (429 Rate Limit, 403 Permission Error, etc.) to structured, actionable formats rather than crashing the loop.
-- **Minimum Spend Thresholds**: To prevent premature decisions, algorithms strictly ignore ads that haven't met a minimum spend threshold (default $15.00), preventing random statistical noise from driving strategy.
+- **Minimum Spend Thresholds**: To prevent premature decisions, algorithms strictly ignore ads that haven't met a minimum spend threshold (default ₹1500), preventing random statistical noise from driving strategy.
