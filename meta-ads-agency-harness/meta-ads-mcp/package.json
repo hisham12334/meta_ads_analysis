@@ -1,7 +1,7 @@
 {
-  "name": "meta-ads-readonly-mcp",
-  "version": "0.1.0",
-  "description": "Read-only Meta Ads MCP connector for ecommerce performance analysis.",
+  "name": "meta-ads-intelligence",
+  "version": "0.2.0",
+  "description": "Meta Ads intelligence layer: Ad Library search, market analysis, creative briefs, anomaly detection, and spend pacing. Complements the official Meta Ads MCP (mcp.facebook.com/ads) which handles read/write campaign operations.",
   "type": "module",
   "private": true,
   "scripts": {

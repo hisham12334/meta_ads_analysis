@@ -1,20 +1,54 @@
-# Meta Ads Read-Only MCP
+# Meta Ads Intelligence MCP
 
-Dependency-free Node MCP server for reading Meta Ads performance data.
+Local Node.js MCP server providing the intelligence and Ad Library analysis layer for the Meta Ads agency workflow.
 
-This is intentionally narrow. It is not a Supermetrics clone and it does not change live ads.
+This server runs **alongside** the official Meta Ads MCP (`mcp.facebook.com/ads`) — it does not replace it.
+
+## Architecture
+
+Two MCP servers are active in this project:
+
+| Server | Config key | What it does |
+|---|---|---|
+| [Official Meta Ads MCP](https://mcp.facebook.com/ads) | `meta-ads-official` | Read/write campaign ops, catalog, pixel diagnostics, insights, benchmarks — 29 tools via Meta Business OAuth. No token setup required. |
+| This server | `meta-ads-intelligence` | Ad Library competitor research, market analysis, creative briefs, anomaly detection, spend pacing — 5 tools not covered by the official MCP. |
+
+The official MCP owns everything that touches live campaigns. This server owns custom analysis logic and Ad Library data.
+
+## Tools (5)
+
+### Creative Intelligence Engine
+
+- `detect_anomalies` — detect metric anomalies in daily performance data with root-cause classification and plain-English explanations. Covers 7 root causes: auction pressure, creative fatigue, tracking break, learning phase reset, audience saturation, offer mismatch, budget pacing.
+- `generate_creative_brief` — data-driven creative brief from top-performing ads. Returns 3 variation directions, Meta specs, and skill references.
+- `get_spend_pacing` — project month-end spend against a monthly budget. Returns breakeven ROAS, projected profit/loss, and recommended daily budget.
+
+### Market Intelligence (Ad Library)
+
+- `search_ad_library` — search Meta Ad Library by keyword/niche and return enriched competitor ads with hook, format, and offer signals.
+- `analyse_market` — full market intelligence report: tier classification, hook/format/offer/CTA pattern frequencies, and workflow context hints ready to feed into the creative brief workflow.
+
+## What the Official Meta MCP Covers
+
+The `meta-ads-official` server handles these — don't duplicate them here:
+
+- Campaign, ad set, and ad creation/editing (`ads_create_*`, `ads_update_entity`)
+- Budget changes and activation (`ads_activate_entity`)
+- Product catalog management (10 catalog tools)
+- Pixel and Conversions API diagnostics (`ads_get_dataset_*`, `ads_get_errors`)
+- Performance trends and anomaly signals (`ads_insights_*`)
+- Industry benchmarks and auction ranking (`ads_insights_industry_benchmark`, `ads_insights_auction_ranking_benchmarks`)
+- Opportunity scores (`ads_get_opportunity_score`)
 
 ## Requirements
 
-- Node.js 18 or newer.
-- Meta Business Manager access.
-- Meta Developer app with Marketing API access.
-- Meta ad account ID.
-- Meta access token with read permissions for the ad account.
+- Node.js 18 or newer
+- Meta access token with `ads_read` and `pages_read_engagement` scopes (for Ad Library calls)
+- Meta ad account ID
 
 ## Setup
 
-Copy `.env.example` into your MCP runtime environment and set:
+Copy `.env.example` and fill in:
 
 ```text
 META_ACCESS_TOKEN=
@@ -30,56 +64,8 @@ Do not commit real tokens.
 npm start
 ```
 
-The server communicates over stdio using JSON-RPC/MCP.
+Communicates over stdio using JSON-RPC/MCP.
 
-## Tools
+## Safety
 
-- `get_ad_accounts`
-- `get_account_summary`
-- `get_campaign_insights`
-- `get_adset_insights`
-- `get_ad_insights`
-- `get_daily_performance`
-- `get_breakdown_insights`
-- `get_creative_fatigue_report`
-- `diagnose_performance`
-- `search_ad_library`
-- `analyse_market`
-
-## Market Intelligence Features
-
-The latest release introduces the **Market Intelligence Tool**, providing advanced insights into competitor ads via the Meta Ad Library API:
-
-- **Ad Search & Extraction**: Fetches publicly visible competitor ads based on niche/keyword queries.
-- **Signal Enrichment**: Enriches raw ads with performance signals such as:
-  - Computed run duration
-  - Impression range scoring
-  - Hook, offer, and format signal detection
-- **Performance Tier Classification**: Automatically categorizes ads into top, low, or unclassified performance tiers based on a composite score.
-- **Intelligence Reports**: Generates a comprehensive report highlighting pattern frequencies (hooks, offers, formats, CTAs) and workflow context hints, ready to feed directly into the Creative Intelligence Workflow.
-
-## Example Tool Arguments
-
-```json
-{
-  "date_preset": "last_7d",
-  "limit": 50
-}
-```
-
-```json
-{
-  "time_range": {
-    "since": "2026-04-26",
-    "until": "2026-05-03"
-  },
-  "target_roas": 3,
-  "minimum_spend_to_judge": 1500
-}
-```
-
-## Safety Boundary
-
-This MCP is read-only. It can recommend actions, but it cannot pause campaigns, change budgets, publish ads, or edit targeting.
-
-Future write tools should be added only after Meta app review and a human approval flow.
+This server is read-only. It cannot pause campaigns, change budgets, or publish ads. All recommended actions require human approval before being executed via the official MCP.

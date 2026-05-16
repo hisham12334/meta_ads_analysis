@@ -6,83 +6,9 @@ import { MetaAdsClient } from "./metaClient.js";
 const client = new MetaAdsClient();
 
 const tools = [
-  tool("get_ad_accounts", "Return Meta ad accounts accessible by the token.", {}),
-  tool("get_account_summary", "Return account-level Meta Ads performance summary.", reportSchema()),
-  tool("get_campaign_insights", "Return campaign-level Meta Ads performance.", reportSchema()),
-  tool("get_adset_insights", "Return ad set performance, optionally filtered by campaign_id.", {
-    type: "object",
-    properties: {
-      ...reportSchema().properties,
-      campaign_id: { type: "string" }
-    },
-    additionalProperties: false
-  }),
-  tool("get_ad_insights", "Return ad performance, optionally filtered by adset_id.", {
-    type: "object",
-    properties: {
-      ...reportSchema().properties,
-      adset_id: { type: "string" }
-    },
-    additionalProperties: false
-  }),
-  tool("get_daily_performance", "Return daily performance trend rows for an account or entity.", {
-    type: "object",
-    properties: {
-      ...reportSchema().properties,
-      level: { type: "string", enum: ["account", "campaign", "adset", "ad"] },
-      entity_id: { type: "string", description: "ID of the campaign, adset, or ad to filter by." }
-    },
-    additionalProperties: false
-  }),
-  tool("get_breakdown_insights", "Return performance broken down by age, gender, country, placement, or device.", {
-    type: "object",
-    properties: {
-      ...reportSchema().properties,
-      level: { type: "string", enum: ["campaign", "adset", "ad"] },
-      entity_id: { type: "string", description: "ID of the entity at the chosen level." },
-      breakdowns: {
-        type: "array",
-        items: {
-          type: "string",
-          enum: [
-            "age",
-            "gender",
-            "country",
-            "region",
-            "publisher_platform",
-            "platform_position",
-            "device_platform",
-            "impression_device"
-          ]
-        }
-      }
-    },
-    additionalProperties: false
-  }),
-  tool("get_creative_fatigue_report", "Flag ads that may need creative refresh. Pass entity_id with level to scope to a campaign or adset.", {
-    type: "object",
-    properties: {
-      ...reportSchema().properties,
-      level: { type: "string", enum: ["campaign", "adset", "ad"], description: "Level to pull ads from." },
-      entity_id: { type: "string", description: "ID of the campaign or adset to scope the report to." }
-    },
-    additionalProperties: false
-  }),
-  tool("diagnose_performance", "Classify winners, watchlist items, and losers using performance thresholds.", {
-    type: "object",
-    properties: {
-      ...reportSchema().properties,
-      level: { type: "string", enum: ["campaign", "adset", "ad"], description: "Level to diagnose. Pass entity_id to scope to a parent entity." },
-      entity_id: { type: "string", description: "Optional parent entity ID to scope results (e.g. campaign_id when level=adset)." },
-      target_roas: { type: "number" },
-      target_cost_per_purchase: { type: "number" },
-      minimum_spend_to_judge: { type: "number" }
-    },
-    additionalProperties: false
-  }),
-
   // ---------------------------------------------------------------------------
   // Creative Intelligence Engine tools
+  // (use meta-ads-official for raw campaign/adset/ad reads)
   // ---------------------------------------------------------------------------
 
   tool("detect_anomalies", "Detect metric anomalies in daily performance data with root-cause classification and plain-English explanations.", {
@@ -166,15 +92,6 @@ const tools = [
 ];
 
 const toolHandlers = {
-  get_ad_accounts: () => client.getAdAccounts(),
-  get_account_summary: (args) => client.getAccountSummary(args),
-  get_campaign_insights: (args) => client.getCampaignInsights(args),
-  get_adset_insights: (args) => client.getAdsetInsights(args),
-  get_ad_insights: (args) => client.getAdInsights(args),
-  get_daily_performance: (args) => client.getDailyPerformance(args),
-  get_breakdown_insights: (args) => client.getBreakdownInsights(args),
-  get_creative_fatigue_report: (args) => client.getCreativeFatigueReport(args),
-  diagnose_performance: (args) => client.diagnosePerformance(args),
   detect_anomalies: (args) => client.detectAnomalies(args),
   generate_creative_brief: (args) => client.generateCreativeBrief(args),
   get_spend_pacing: (args) => client.getSpendPacing(args),
@@ -215,8 +132,8 @@ async function handleRequest(request) {
         tools: {}
       },
       serverInfo: {
-        name: "meta-ads-readonly-mcp",
-        version: "0.1.0"
+        name: "meta-ads-intelligence",
+        version: "0.2.0"
       }
     });
     return;
@@ -285,29 +202,3 @@ function tool(name, description, inputSchema) {
   return { name, description, inputSchema: schema };
 }
 
-function reportSchema() {
-  return {
-    type: "object",
-    properties: {
-      date_preset: { type: "string" },
-      time_range: {
-        type: "object",
-        properties: {
-          since: { type: "string" },
-          until: { type: "string" }
-        },
-        required: ["since", "until"],
-        additionalProperties: false
-      },
-      limit: {
-        type: "number",
-        minimum: 1,
-        maximum: 500
-      },
-      action_attribution_windows: {
-        type: "array",
-        items: { type: "string" }
-      }
-    }
-  };
-}
